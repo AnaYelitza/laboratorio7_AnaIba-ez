@@ -1,0 +1,98 @@
+﻿@model IEnumerable<ENTIDAD.Proyecto>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Lista de Proyectos</h2>
+
+<p>
+    <a class="btn btn-primary" href="@Url.Action("Crear", "Proyecto")"><i class="glyphicon glyphicon-plus"></i> Crear Nuevo</a>
+</p>
+<table class="table" id="tableDemo">
+    <thead>
+        <tr>
+            <th>
+                <label class="demoCss">Nombre del Proyecto</label>
+            </th>
+            <th>
+                Fecha de Inicio
+            </th>
+            <th>
+                Fecha Fin
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.NombreProyecto
+                </td>
+                <td>
+                    @item.FechaInicio.ToShortDateString()
+                </td>
+                <td>
+                    @item.FechaFin.ToShortDateString()
+                </td>
+                <td>
+                    <a class="btn btn-primary btn-xs" title="Editar" href="@Url.Action("Editar", "Proyecto", new { id = item.ProyectoId })">
+                        <i class="glyphicon glyphicon-edit"></i>
+                    </a>
+                    <a class="btn btn-info btn-xs" title="Detalles" href="@Url.Action("Detalles", "Proyecto", new { id = item.ProyectoId })">
+                        <i class="glyphicon glyphicon-pencil"></i>
+                    </a>
+                    <a class="btn btn-danger btn-xs" onclick="EliminarProyecto(@item.ProyectoId)" title="Eliminar">
+                        <i class="glyphicon glyphicon-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts{
+    <script>
+        $('#tableDemo').DataTable({
+            "pageLength": 5,
+            lengthMenu: [5, 10, 20, 50, 100, 200, 500],
+        });
+
+        function EliminarProyecto(id) {
+            $.confirm({
+                title: 'Eliminar Proyecto!',
+                content: '¿Estás seguro de Eliminar este Proyecto?',
+                buttons: {
+                    Confirmar: function () {
+                        LoadingOverlayShow("#tableDemo");
+                        $.ajax({
+                            url: "/proyecto/eliminar",
+                            type: "post",
+                            data: { identificador: id }
+                        }).done(function (response) { //
+                            console.log(response);
+                            LoadingOverlayHide("#tableDemo");
+                            if (response.ok) {
+                                alert("Proyecto Eliminado correctamente.");
+                                window.location = response.toRedirect;
+                            }
+                            else {
+                                alert(response.msg);
+                            }
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            LoadingOverlayHide("#tableDemo");
+                            alert(textStatus);
+                        });
+                    },
+                    Cancelar: function () {
+                        //$.alert('Canceled!');
+                    },
+                }
+            });
+        }
+
+    </script>
+}
